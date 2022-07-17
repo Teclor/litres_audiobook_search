@@ -1,0 +1,6 @@
+test*
+/resources/db_auth.json
+.idea
+*.xml
+*.log
+

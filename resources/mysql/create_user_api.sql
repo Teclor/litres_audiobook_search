@@ -1,0 +1,3 @@
+CREATE USER IF NOT EXISTS 'api'@'localhost' IDENTIFIED BY 'HsQ6n3b9';
+GRANT ALL PRIVILEGES ON audiobook.* TO 'api'@'localhost';
+FLUSH PRIVILEGES;

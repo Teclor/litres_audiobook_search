@@ -1,0 +1,24 @@
+<IfModule dir_module>
+    DirectoryIndex index.php index.html
+</IfModule>
+AddDefaultCharset UTF-8
+AddCharset UTF-8 .html
+<FilesMatch "\.(html)$">
+   Header set Cache-Control: "no-cache, no-store"
+   Header unset ETag
+</FilesMatch>
+Header set X-Content-Type-Options nosniff
+
+Order Deny,Allow
+Deny From All
+<FilesMatch "^index\.php$">
+Allow From All
+</FilesMatch>
+<FilesMatch "^$">
+Allow From All
+</FilesMatch>
+
+RewriteEngine on
+Options +FollowSymLinks
+RewriteCond %{THE_REQUEST} index.php$
+RewriteRule index.php$ https://%{SERVER_NAME}/ [R=301,L]
