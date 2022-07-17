@@ -18,6 +18,7 @@ class BookDataTable extends AbstractTable
             'URL',
             'PRICE',
             'CURRENCY_ID',
+            'CATEGORY_ID',
             'PICTURE',
             'AUTHOR',
             'PUBLISHER',

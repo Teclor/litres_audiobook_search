@@ -33,10 +33,10 @@ abstract class AbstractTable implements ITable
         
         if (count($columnToValue) > 0) {
             $query .= ' (' . implode(', ', array_keys($columnToValue)) . ') ';
-            $query .= 'VALUES (\'' . implode('\', \'', $columnToValue) . '\')';
+            $query .= 'VALUES (:' . implode(', :', array_keys($columnToValue)) . ')';
         }
         $query .= ';';
-        Connection::getInstance()->executeQuery($query);
+        Connection::getInstance()->executeQueryWithBinds($query, $columnToValue);
     }
 
     /**
@@ -51,11 +51,11 @@ abstract class AbstractTable implements ITable
             if ($isCommaRequired) {
                 $query .= ', ';
             }
-            $query .= $columnName . " = '$value'";
+            $query .= $columnName . " = :$columnName";
             $isCommaRequired = true;
         }
         $query .= static::getWhereForPrimary($primaryKeyValue) . ';';
-        Connection::getInstance()->executeQuery($query);
+        Connection::getInstance()->executeQueryWithBinds($query, $columnToValue);
     }
 
     public static function delete($primaryKeyValue)
@@ -66,6 +66,7 @@ abstract class AbstractTable implements ITable
 
     public static function select(array $conditions = [], array $columns = [], string $orderBy = '', $orderAsc = true): array
     {
+        $bindToValue = [];
         $query = 'SELECT ';
         if (count($columns) > 0) {
             $isCommaRequired = false;
@@ -86,7 +87,8 @@ abstract class AbstractTable implements ITable
         
         $query .= ' FROM ' . static::getName();
         if (count($conditions) > 0) {
-            $query .= ' ' . static::getWhereForConditions($conditions);
+            list($whereCondition, $bindToValue) = static::getWhereForConditions($conditions);
+            $query .= $whereCondition;
         }
         
         if (!empty($orderBy)) {
@@ -94,7 +96,7 @@ abstract class AbstractTable implements ITable
         }
         
         $query .= ';';
-        return Connection::getInstance()->executeQuery($query) ?: [];
+        return Connection::getInstance()->executeQueryWithBinds($query, $bindToValue) ?: [];
     }
     
     protected static function getValuesByColumnNames($values): array
@@ -109,16 +111,21 @@ abstract class AbstractTable implements ITable
         return $columnToValue;
     }
 
-    protected static function getWhereForConditions(array $conditions): string
+    protected static function getWhereForConditions(array $conditions): array
     {
-        $whereCondition = 'WHERE ';
+        $bindToValue = [];
+        $lastBindIndex = 0;
+        $whereCondition = ' WHERE ';
         $isAndRequired = false;
         foreach ($conditions as $columnName => $columnValue) {
             if ($isAndRequired) {
                 $whereCondition .= ' AND ';
             }
             if (is_array($columnValue)) {
-                $whereCondition .= $columnName . ' IN (' . implode(',', $columnValue) . ')';
+                $whereCondition .= $columnName . ' IN (' . str_repeat('?,', count($columnValue) - 1) . '?)';
+                foreach ($columnValue as $value) {
+                    $bindToValue[$columnName][$lastBindIndex++] = $value;
+                }
             }
             else {
                 $comparisonOperator = '';
@@ -129,16 +136,19 @@ abstract class AbstractTable implements ITable
                     }
                 }
                 if (empty($comparisonOperator)) {
-                    $whereCondition .= "$columnName LIKE '%$columnValue%'";
+                    $whereCondition .= "$columnName LIKE :$columnName";
+                    $bindToValue[$columnName] = "%$columnValue%";
                 }
                 else {
-                    $whereCondition .= "$columnName $comparisonOperator '$columnValue'";
+                    $whereCondition .= "$columnName $comparisonOperator :$columnName";
+                    $bindToValue[$columnName] = $columnValue;
                 }
+               
             }
             $isAndRequired = true;
         }
         
-        return $whereCondition;
+        return [$whereCondition, $bindToValue];
     }
     
     /**
@@ -149,7 +159,7 @@ abstract class AbstractTable implements ITable
         if (empty($primaryKeyValue)) {
             throw new OrmException('Empty primary key value');
         }
-        $whereCondition = 'WHERE ';
+        $whereCondition = ' WHERE ';
         $primaryKey = static::getPrimaryKey();
         if (is_string($primaryKey)) {
             $whereCondition .= $primaryKey;
