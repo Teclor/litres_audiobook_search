@@ -10,12 +10,15 @@ class Endpoint
     public static function callMethod($methodName, $arguments)
     {
         $result = null;
-        try {
-            $result = call_user_func_array([Methods::class, $methodName], $arguments);
+        if (method_exists(Methods::class, $methodName)) {
+            try {
+                $result = call_user_func_array([Methods::class, $methodName], $arguments);
+            }
+            catch (\Throwable $exception) {
+                Logger::logException($exception);
+            }
         }
-        catch (\Throwable $exception) {
-            Logger::logException($exception);
-        }
+
         return $result;
     }
 
