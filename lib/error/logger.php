@@ -16,7 +16,7 @@ class Logger
     
     public static function log($data)
     {
-        $message = date('d.m.Y H:i:s') . ' ' .print_r($data, true) . PHP_EOL;
+        $message = date('d.m.Y H:i:s') . ' ' . print_r($data, true) . PHP_EOL;
         File::putContents(self::DEFAULT_LOG_PATH, $message, true);
     }
     

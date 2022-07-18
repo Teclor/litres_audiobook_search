@@ -9,16 +9,12 @@ AddCharset UTF-8 .html
 </FilesMatch>
 Header set X-Content-Type-Options nosniff
 
-Order Deny,Allow
-Deny From All
-<FilesMatch "^index\.php$">
-Allow From All
-</FilesMatch>
-<FilesMatch "^$">
-Allow From All
-</FilesMatch>
-
 RewriteEngine on
 Options +FollowSymLinks
+
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule . index.php [L]
+
 RewriteCond %{THE_REQUEST} index.php$
 RewriteRule index.php$ https://%{SERVER_NAME}/ [R=301,L]
