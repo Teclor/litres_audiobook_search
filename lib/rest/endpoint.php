@@ -3,11 +3,20 @@
 namespace Rest;
 
 
+use Error\Logger;
+
 class Endpoint
 {
     public static function callMethod($methodName, $arguments)
     {
-        return call_user_func_array([Methods::class, $methodName], $arguments);
+        $result = null;
+        try {
+            $result = call_user_func_array([Methods::class, $methodName], $arguments);
+        }
+        catch (\Throwable $exception) {
+            Logger::logException($exception);
+        }
+        return $result;
     }
 
     public static function handleRequest()
