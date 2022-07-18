@@ -28,6 +28,6 @@ class BookNameTable extends AbstractTable
             " WHERE match(NAME) AGAINST ('$searchText') ORDER BY RELEVANCE DESC LIMIT 1";
         $result = Connection::getInstance()->executeQuery($query);
         
-        return is_array($result) ? current($result) : [];
+        return is_array(current($result)) ? current($result) : [];
     }
 }

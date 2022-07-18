@@ -1,1 +1,8 @@
-{"downloadFilePath": "/resources/files/audio_all.xml.gz", "downloadUrl": "https://www.litres.ru/static/ds/audio_all.xml.gz", "filesDir": "/resources/files/", "xmlFileName": "audio_all.xml"}
+{
+  "downloadFilePath": "/resources/files/audio_all.xml.gz",
+  "downloadUrl": "https://www.litres.ru/static/ds/audio_all.xml.gz",
+  "filesDir": "/resources/files/",
+  "xmlFileName": "audio_all.xml",
+  "comparisonMethod": "levenshtein",
+  "similarityPercent": "90"
+}
